@@ -11,21 +11,24 @@ from pydantic import BaseModel, Field
 try:
     from backend.detector import analyze_prompt
 except ImportError:
-    def analyze_prompt(text: str) -> dict:
-        lowered = text.lower()
-        is_attack = (
-            "ignore all previous instructions" in lowered
-            or "system prompt" in lowered
-            or "bypass" in lowered
-        )
-        return {
-            "decision": "BLOCK" if is_attack else "ALLOW",
-            "risk_score": 95.0 if is_attack else 5.0,
-            "confidence": 0.95 if is_attack else 0.90,
-            "reason": "Stub rule match" if is_attack else "No suspicious pattern (stub)",
-            "detected_by": "stub",
-            "latency_ms": 0.5,
-        }
+    try:
+        from detector import analyze_prompt
+    except ImportError:
+        def analyze_prompt(text: str) -> dict:
+            lowered = text.lower()
+            is_attack = (
+                "ignore all previous instructions" in lowered
+                or "system prompt" in lowered
+                or "bypass" in lowered
+            )
+            return {
+                "decision": "BLOCK" if is_attack else "ALLOW",
+                "risk_score": 95.0 if is_attack else 5.0,
+                "confidence": 0.95 if is_attack else 0.90,
+                "reason": "Stub rule match" if is_attack else "No suspicious pattern (stub)",
+                "detected_by": "stub",
+                "latency_ms": 0.5,
+            }
 
 load_dotenv(Path(__file__).with_name(".env"))
 
