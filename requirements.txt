@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+python-dotenv
+openai
+requests
+transformers
+torch
+sentencepiece
+pandas
+numpy
+scikit-learn
+matplotlib
