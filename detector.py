@@ -6,7 +6,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 # 1. Model configuration
-MODEL_NAME = "protectai/deberta-v3-base-prompt-injection-v2"
+MODEL_NAME = "Horizon-Labs/prompt-injection-guard-small"
 ML_THRESHOLD = 0.80
 
 tokenizer = None
@@ -44,15 +44,37 @@ def detect_with_rules(text):
     return False, None
 
 def is_educational_mention(text):
-    educational_prompts = {
-        "explain why the phrase 'ignore all previous instructions' is used in prompt injection research.",
-        "explain the phrase 'ignore all previous instructions' in cybersecurity."
-    }
+    """Identify clearly framed educational or research discussions."""
 
-    return text.strip() in educational_prompts
+    text = text.strip().lower()
 
-    return bool(re.fullmatch(pattern, text.strip()))
+    # The message must be framed as an educational request.
+    educational_request = re.search(
+        r"^(explain|describe|discuss|analyse|analyze|"
+        r"write|define|what does|why do|how do)\b",
+        text
+    )
 
+    # It must contain an educational or security-research context.
+    educational_context = re.search(
+        r"\b(prompt injection|cybersecurity|security research|"
+        r"academic|educational|research|lecture|"
+        r"attackers use|defensive security)\b",
+        text
+    )
+
+    # The suspicious phrase must be discussed as a topic.
+    attack_phrase = re.search(
+        r"\b(ignore all previous instructions|"
+        r"disregard previous instructions)\b",
+        text
+    )
+
+    return bool(
+        educational_request
+        and educational_context
+        and attack_phrase
+    )
 # 5. Load ML model only once
 def load_ml_model():
     global tokenizer, model, injection_label_id, model_error
